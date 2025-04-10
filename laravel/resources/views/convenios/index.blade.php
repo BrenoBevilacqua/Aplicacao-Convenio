@@ -14,15 +14,16 @@
 </div>
 
     <table class="table-auto w-full border-collapse border border-gray-300 text-sm">
-        <thead class="bg-gray-100">
-            <tr>
-                <th class="border border-gray-300 px-2 py-1">Dados Gerais</th>
-                <th class="border border-gray-300 px-2 py-1">Recursos / Concedentes / Parlamentar</th>
-                <th class="border border-gray-300 px-2 py-1">Finalidade / Detalhamento</th>
-                <th class="border border-gray-300 px-2 py-1">Valores / Data</th>
-                <th class="border border-gray-300 px-2 py-1">Status / Ações</th>
-            </tr>
-        </thead>
+    <thead class="bg-gray-100">
+        <tr>
+            <th class="border border-gray-300 px-2 py-1">Dados Gerais</th>
+            <th class="border border-gray-300 px-2 py-1">Recursos / Concedentes / Parlamentar</th>
+            <th class="border border-gray-300 px-2 py-1">Finalidade / Detalhamento</th>
+            <th class="border border-gray-300 px-2 py-1">Valores / Data</th>
+            <th class="border border-gray-300 px-2 py-1">Status</th>
+            <th class="border border-gray-300 px-2 py-1">Ações</th>
+        </tr>
+    </thead>
         <tbody>
             @foreach ($convenios as $convenio)
                 <tr>
@@ -60,9 +61,14 @@
                     </td>
 
                     <!-- Status / Ações -->
+                    <!-- Status -->
                     <td class="border border-gray-300 px-2 py-1">
-                        <strong>Status:</strong> --<br>
-                        <a href="{{ route('convenio.edit', $convenio->id) }}" class="text-blue-600 hover:underline">Editar</a>
+                        <strong>Status:</strong> --
+                    </td>
+
+                    <!-- Ações -->
+                    <td class="border border-gray-300 px-2 py-1">
+                        <a href="{{ route('convenio.edit', $convenio->id) }}" class="text-blue-600 hover:underline">Editar</a><br>
                         <form action="{{ route('convenio.destroy', $convenio->id) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')

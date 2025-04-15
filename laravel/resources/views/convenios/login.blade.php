@@ -116,7 +116,7 @@
     <input 
     type="text" id="username" name="username" placeholder="Digite seu usuário" required 
     value="{{ old('username') }}" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
-</div>
+            </div>
 
             <div class="form-group">
                 <label for="password">Senha</label>

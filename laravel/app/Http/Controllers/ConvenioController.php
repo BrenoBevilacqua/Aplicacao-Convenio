@@ -5,10 +5,12 @@ use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Http\Request;
 use App\Models\Convenio;
+use App\Models\Acao;
 use Carbon\Carbon;
 
 class ConvenioController extends Controller
 {
+    // pagina inicial com tabelas
     public function index()
     {
         $convenios = Convenio::all();
@@ -23,11 +25,13 @@ class ConvenioController extends Controller
         return view('convenios.index', compact('convenios'));
     }
 
+    // rota de login
     public function login()
     {
         return view('convenios.login');
     }
 
+    // autenticação
     public function authenticate(Request $request)
     {
         $credentials = $request->only('username', 'password');
@@ -46,6 +50,7 @@ class ConvenioController extends Controller
         return 'username';
     }
 
+    // array de dados auxiliares
     private function dadosAuxiliares()
     {
         return [
@@ -110,11 +115,13 @@ class ConvenioController extends Controller
         ];
     }
 
+    // rota para create
     public function create()
     {
         return view('convenios.create', $this->dadosAuxiliares());
     }
 
+    // criar convenio
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -146,13 +153,14 @@ class ConvenioController extends Controller
 
     public function edit($id)
     {
-        $convenio = Convenio::findOrFail($id);
-        return view('convenios.edit', array_merge(
-            ['convenio' => $convenio],
-            $this->dadosAuxiliares()
-        ));
-    }
+    $convenio = Convenio::with('acoes')->findOrFail($id);
 
+    return view('convenios.edit', array_merge(
+        ['convenio' => $convenio],
+        $this->dadosAuxiliares()
+    ));
+    }
+    // editar convenio
     public function update(Request $request, $id)
     {
         $convenio = Convenio::findOrFail($id);
@@ -183,11 +191,60 @@ class ConvenioController extends Controller
         return redirect()->route('convenio.index')->with('success', 'Convênio atualizado com sucesso!');
     }
     
-    public function destroy($id)
+    // deletar convenio
+    public function destroy($convenioId, $acaoId = null)
     {
-    $convenio = Convenio::findOrFail($id);
+        if ($acaoId) {
+            $acao = Acao::where('convenio_id', $convenioId)->where('id', $acaoId)->first();
+
+        if (!$acao) {
+            return response()->json(['sucesso' => false, 'mensagem' => 'Ação não encontrada.'], 404);
+        }
+
+        $acao->delete();
+        return response()->json(['sucesso' => true]);
+    }
+   
+    $convenio = Convenio::findOrFail($convenioId);
     $convenio->delete();
 
-    return redirect()->route('convenio.index')->with('success', 'Convênio excluído com sucesso!');
-    }
+    return redirect()->route('convenios.index')->with('success', 'Convênio excluído com sucesso.');
 }
+
+    // acoes
+    public function storeAcao(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'tipo' => 'required|in:concedente,convenente',
+                'observacao' => 'required|string',
+                'data_edicao' => 'required|date',
+            ]);
+    
+            $acao = new Acao();
+            $acao->convenio_id = $id;
+            $acao->tipo = $request->tipo;
+            $acao->observacao = $request->observacao;
+            $acao->data_edicao = $request->data_edicao;
+            $acao->save();
+    
+            return response()->json([
+                'sucesso' => true,
+                'acao' => [
+                    'id' => $acao->id,
+                    'tipo' => $acao->tipo,
+                    'data_edicao_formatada' => Carbon::parse($acao->data_edicao)->format('d/m/Y'),
+                    'observacao' => $acao->observacao,
+                    'convenio_id' => $acao->convenio_id
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'sucesso' => false,
+                'mensagem' => 'Erro ao salvar ação: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+   
+}
+

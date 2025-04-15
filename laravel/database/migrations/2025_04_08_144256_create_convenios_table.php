@@ -31,8 +31,8 @@ return new class extends Migration
             $table->string('natureza_despesa'); // Natureza de despesa
             $table->date('data_assinatura'); // Data da assinatura
             $table->date('data_vigencia'); // Data de vigência
-
             $table->timestamps(); // created_at e updated_at
+
         });
     }
 

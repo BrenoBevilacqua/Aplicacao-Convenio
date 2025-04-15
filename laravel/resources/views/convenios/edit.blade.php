@@ -64,24 +64,39 @@
     </style>
 </head>
 <body>
+    @include('convenios._modal_acoes')
+
     <div style="position: absolute; top: 20px; left: 20px;">
         <a href="{{ route('convenio.index') }}"
             style="background-color: rgb(10, 59, 163); color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
             ← Voltar
         </a>
     </div>
+
     <h1 style="text-align:center;">Edição de Convênio</h1>
     <form method="POST" action="{{ route('convenio.update', $convenio->id) }}">
         @csrf
         @method('PUT')
 
-        @if($errors->any())
-        <ul>
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-        @endif
+
+        <div style="text-align:center; margin-bottom: 20px;">
+            <button type="button" onclick="abrirModalAcoes()"
+            style="background-color: #27ae60; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer;">
+            Criar Ações
+            </button>
+        </div>
+
+        <script>
+            function abrirModalAcoes() {
+                document.getElementById('modalAcoes').style.display = 'block';
+            }
+
+            function fecharModalAcoes() {
+                document.getElementById('modalAcoes').style.display = 'none';
+            }
+        </script>
+
+
 
         <h3>Dados do Convênio</h3>
         <div>

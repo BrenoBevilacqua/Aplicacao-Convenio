@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Acao;
 
 class Convenio extends Model
 {
@@ -22,4 +23,8 @@ class Convenio extends Model
         'data_assinatura',
         'data_vigencia',
     ];
+    public function acoes()
+    {
+    return $this->hasMany(Acao::class);
+    }
 }

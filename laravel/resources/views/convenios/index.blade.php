@@ -4,9 +4,14 @@
 
 @section('content')
 <div class="container">
+   
+
+    
+    </div> 
+
     <h1 class="text-xl font-bold mb-4">Lista de Convênios</h1>
 
-    <div style="position: absolute; top: 30px; right: 55px;">
+    <div style="position: absolute; top: 100px; right: 60px;">
     <a href="{{ route('convenio.create') }}"
        style="background-color:rgb(10, 59, 163); color: white; font-weight: 600; padding: 10px 20px; border-radius: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: background-color 0.3s;">
         Novo Registro
@@ -67,13 +72,15 @@
                     </td>
 
                     <!-- Ações -->
-                    <td class="border border-gray-300 px-2 py-1">
-                        <a href="{{ route('convenio.edit', $convenio->id) }}" class="text-blue-600 hover:underline">Editar</a><br>
-                        <form action="{{ route('convenio.destroy', $convenio->id) }}" method="POST" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:underline" onclick="return confirm('Tem certeza que deseja excluir este convênio?')">Excluir</button>
-                        </form>
+                    <td class="border border-gray-300 px-2 py-1 table-actions">
+                        <div class="actions-container">
+                            <a href="{{ route('convenio.edit', $convenio->id) }}" class="text-blue-600 hover:underline">Editar</a>
+                            <form action="{{ route('convenio.destroy', $convenio->id) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:underline" onclick="return confirm('Tem certeza que deseja excluir este convênio?')">Excluir</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
             @endforeach

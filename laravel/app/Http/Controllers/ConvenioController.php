@@ -1,10 +1,10 @@
 <?php
-
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Http\Request;
 use App\Models\Convenio;
+use App\Models\LogHistorico;
 use App\Models\Acao;
 use Carbon\Carbon;
 
@@ -24,15 +24,9 @@ class ConvenioController extends Controller
 
         return view('convenios.index', compact('convenios'));
     }
-
-    // rota de login
-    public function login()
-    {
-        return view('convenios.login');
-    }
-
+  
     // autenticação
-    public function authenticate(Request $request)
+    /*public function authenticate(Request $request)
     {
         $credentials = $request->only('username', 'password');
 
@@ -44,6 +38,7 @@ class ConvenioController extends Controller
             'username' => 'Usuário ou senha incorretos.',
         ]);
     }
+        */
 
     public function username()
     {
@@ -124,6 +119,7 @@ class ConvenioController extends Controller
     // criar convenio
     public function store(Request $request)
     {
+    // Validação dos dados
         $data = $request->validate([
             'numero_convenio' => 'required|numeric',
             'ano_convenio' => 'required|numeric',
@@ -140,16 +136,30 @@ class ConvenioController extends Controller
             'data_vigencia'=> 'required|date',
         ]);
 
-        $data['valor_total'] = $data['valor_repasse'] + $data['valor_contrapartida'];
+    // Calculando o valor total
+    $data['valor_total'] = $data['valor_repasse'] + $data['valor_contrapartida'];
 
-        $request->merge([
-            'valor_repasse' => str_replace(['.', ','], ['', '.'], $request->valor_repasse),
-            'valor_contrapartida' => str_replace(['.', ','], ['', '.'], $request->valor_contrapartida),
-        ]);
+    // Formatação dos valores monetários
+    $request->merge([
+        'valor_repasse' => str_replace(['.', ','], ['', '.'], $request->valor_repasse),
+        'valor_contrapartida' => str_replace(['.', ','], ['', '.'], $request->valor_contrapartida),
+    ]);
 
-        $newConvenio = Convenio::create($data);
-        return redirect(route('convenio.index'));
-    }
+    // Criando o novo convênio
+    $newConvenio = Convenio::create($data);
+
+    // Registrando o histórico de criação
+    LogHistorico::create([
+        'user_id' => auth()->id(),
+        'acao' => 'Criação',
+        'numero_convenio' => $newConvenio->numero_convenio,
+        'ano_convenio' => $newConvenio->ano_convenio,
+        'data_modificacao' => now(),
+    ]);
+
+    // Redirecionando para a página de index
+    return redirect(route('convenio.index'));
+}
 
     public function edit($id)
     {
@@ -165,6 +175,12 @@ class ConvenioController extends Controller
     {
         $convenio = Convenio::findOrFail($id);
 
+        $request->merge([
+            'valor_repasse' => str_replace(['.', ','], ['', '.'], $request->valor_repasse),
+            'valor_contrapartida' => str_replace(['.', ','], ['', '.'], $request->valor_contrapartida),
+            'valor_total' => str_replace(['.', ','], ['', '.'], $request->valor_total),
+        ]);
+        
         $validated = $request->validate([
             'numero_convenio' => 'required',
             'ano_convenio' => 'required',
@@ -180,10 +196,13 @@ class ConvenioController extends Controller
             'data_assinatura' => 'nullable|date',
             'data_vigencia' => 'nullable|date',
         ]);
-        $request->merge([
-            'valor_repasse' => str_replace(['.', ','], ['', '.'], $request->valor_repasse),
-            'valor_contrapartida' => str_replace(['.', ','], ['', '.'], $request->valor_contrapartida),
-            'valor_total' => str_replace(['.', ','], ['', '.'], $request->valor_total),
+
+        LogHistorico::create([
+            'user_id' => auth()->id(),
+            'acao' => 'Edição',
+            'numero_convenio' => $convenio->numero_convenio,
+            'ano_convenio' => $convenio->ano_convenio,
+            'data_modificacao' => now(),
         ]);
 
         $convenio->update($validated);
@@ -197,19 +216,28 @@ class ConvenioController extends Controller
         if ($acaoId) {
             $acao = Acao::where('convenio_id', $convenioId)->where('id', $acaoId)->first();
 
-        if (!$acao) {
-            return response()->json(['sucesso' => false, 'mensagem' => 'Ação não encontrada.'], 404);
+            if (!$acao) {
+                return response()->json(['sucesso' => false, 'mensagem' => 'Ação não encontrada.'], 404);
+            }
+
+            $acao->delete();
+            return response()->json(['sucesso' => true]);
         }
-
-        $acao->delete();
-        return response()->json(['sucesso' => true]);
-    }
    
-    $convenio = Convenio::findOrFail($convenioId);
-    $convenio->delete();
+        $convenio = Convenio::findOrFail($convenioId);
 
-    return redirect()->route('convenios.index')->with('success', 'Convênio excluído com sucesso.');
-}
+        LogHistorico::create([
+            'user_id' => auth()->id(),
+            'acao' => 'Exclusão',
+            'numero_convenio' => $convenio->numero_convenio,
+            'ano_convenio' => $convenio->ano_convenio,
+            'data_modificacao' => now(),
+        ]);
+
+        $convenio->delete();
+
+        return redirect()->route('convenio.index')->with('success', 'Convênio excluído com sucesso.');
+    }
 
     // acoes
     public function storeAcao(Request $request, $id)
@@ -244,6 +272,12 @@ class ConvenioController extends Controller
                 'mensagem' => 'Erro ao salvar ação: ' . $e->getMessage()
             ], 500);
         }
+    }
+    public function historico()
+    {
+        $logs = LogHistorico::with('user')->orderBy('data_modificacao', 'desc')->get(); // Obtem os logs de forma ordenada
+        //dd($logs);
+        return view('convenios.info', compact('logs'));
     }
    
 }

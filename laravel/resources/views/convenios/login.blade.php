@@ -112,9 +112,9 @@
             @csrf
 
             <div class="form-group">
-    <label for="username">Usuário</label>
+    <label for="username">Usuário/E-mail</label>
     <input 
-    type="text" id="username" name="username" placeholder="Digite seu usuário" required 
+    type="text" id="username" name="username" placeholder="Digite seu usuário/e-mail" required 
     value="{{ old('username') }}" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
             </div>
 
@@ -128,7 +128,24 @@
                 <label for="remember">Lembrar de mim</label>
             </div>
 
-            <button type="submit" class="btn-login">Entrar</button>
+
+            <!-- (mantém todo o conteúdo acima como está) -->
+
+    <button type="submit" class="btn-login">Entrar</button>
+
+<!-- Novo botão para criar conta -->
+    <div style="margin-top: 15px; text-align: center;">
+        <a href="{{ route('register') }}" style="
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #2ecc71;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+        ">Criar Conta</a>
+    </div>
+
 
             
         </form>

@@ -13,7 +13,7 @@ class ConvenioController extends Controller
     // pagina inicial com tabelas
     public function index()
     {
-        $convenios = Convenio::all();
+        $convenios = Convenio::paginate(3);
 
         foreach ($convenios as $convenio) {
             $dataVigencia = Carbon::parse($convenio->data_vigencia);

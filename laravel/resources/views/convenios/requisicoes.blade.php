@@ -1,65 +1,44 @@
 @extends('convenios.app')
-
 @section('content')
-    <h2>Requisições de Cadastro</h2>
-
+<script> src="https://cdn.tailwindcss.com"</script>
+<div class="container mx-auto px-4">
+    <h1 class="text-xl font-bold mb-4 text-center">Requisições de Cadastro</h1>
+   
     @if(session('success'))
-        <div class="success">
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 text-center">
             {{ session('success') }}
         </div>
     @endif
 
-    <table>
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Email</th>
-                <th>Ações</th>
+    <table class="w-full table-auto border-collapse">
+    <thead class="bg-gray-500 text-white">
+        <tr>
+            <th class="w-1/3 text-center px-4 py-2">Nome</th>
+            <th class="w-1/3 text-center px-4 py-2">Email</th>
+            <th class="w-1/3 text-center px-4 py-2">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($usuarios as $user)
+            <tr class="border-b">
+                <td class="text-center px-4 py-2">{{ $user->name }}</td>
+                <td class="text-center px-4 py-2">{{ $user->email }}</td>
+                <td class="text-center px-4 py-2">
+                    <form method="POST" action="{{ route('admin.aprovar', $user->id) }}" class="inline-block">
+                        @csrf
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded">
+                            Aprovar
+                        </button>
+                    </form>
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @forelse($usuarios as $user)
-                <tr>
-                    <td>{{ $user->name }}</td>
-                    <td>{{ $user->email }}</td>
-                    <td>
-                        <form method="POST" action="{{ route('admin.aprovar', $user->id) }}">
-                            @csrf
-                            <button type="submit" style="background:green; color:white; border:none; padding:5px 10px; border-radius:5px;">Aprovar</button>
-                        </form>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="3" style="text-align:center;">Nenhuma requisição pendente.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+        @empty
+            <tr>
+                <td colspan="3" class="text-center py-4">Nenhuma requisição pendente.</td>
+            </tr>
+        @endforelse
+    </tbody>
+</table>
+
+</div>
 @endsection
-
-@push('styles')
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-        }
-
-        th {
-            background: #f0f0f0;
-        }
-
-        .success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-    </style>
-@endpush

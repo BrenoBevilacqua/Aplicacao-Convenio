@@ -11,9 +11,9 @@
 
     <h1 class="text-xl font-bold mb-4">Lista de Convênios</h1>
 
-    <div style="position: absolute; top: 100px; right: 60px;">
+    <div class="flex justify-end mb-4">
     <a href="{{ route('convenio.create') }}"
-       style="background-color:rgb(10, 59, 163); color: white; font-weight: 600; padding: 10px 20px; border-radius: 6px; text-decoration: none; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transition: background-color 0.3s;">
+       class="bg-blue-700 hover:bg-blue-800 text-white font-semibold px-5 py-2 rounded-md shadow-md transition">
         Novo Registro
     </a>
 </div>
@@ -86,5 +86,8 @@
             @endforeach
         </tbody>
     </table>
+    <div class="mt-6 " >
+        {{ $convenios->onEachSide(0)->links() }}
+    </div>
 </div>
 @endsection

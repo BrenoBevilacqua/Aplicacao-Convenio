@@ -1,59 +1,60 @@
+@vite('resources/js/app.js')  <!-- Para o JS -->
+@vite('resources/css/app.css')
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <div id="modalAcoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.5); z-index: 9999;">
     <div style="background:white; width:80%; max-width:700px; margin:5% auto; padding:20px; border-radius:8px; position:relative; max-height:90%; overflow-y:auto; box-sizing: border-box;">
 
-        <h3>Nova Ação</h3>
+        <h3 class="text-xl font-semibold mb-4">Nova Ação</h3>
         <form id="formNovaAcao">
             @csrf
             <input type="hidden" name="convenio_id" value="{{ $convenio->id }}">
-            <div style="margin-bottom: 10px;">
-                <label for="tipo">Tipo</label>
-                <select name="tipo" required style="width:100%; padding:8px;">
+            <div class="mb-4">
+                <label for="tipo" class="block text-sm font-medium text-gray-700">Tipo</label>
+                <select name="tipo" required class="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                     <option value="concedente">Concedente</option>
                     <option value="convenente">Convenente</option>
                 </select>
             </div>
-            <div style="margin-bottom: 10px;">
-                <label for="data_edicao">Data de Edição</label>
-                <input type="date" name="data_edicao" value="{{ now()->format('Y-m-d') }}" readonly style="width:100%; padding:8px;">
+            <div class="mb-4">
+                <label for="data_edicao" class="block text-sm font-medium text-gray-700">Data de Edição</label>
+                <input type="date" name="data_edicao" value="{{ now()->format('Y-m-d') }}" readonly class="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
             </div>
-            <div style="margin-bottom: 10px;">
-                <label for="observacao">Observação</label>
-                <textarea name="observacao" rows="3" style="width:100%; padding:8px;" required></textarea>
+            <div class="mb-4">
+                <label for="observacao" class="block text-sm font-medium text-gray-700">Observação</label>
+                <textarea name="observacao" rows="3" class="w-full p-2.5 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required></textarea>
             </div>
-            <div style="text-align:right;">
-                <button type="submit" style="padding: 10px 20px; background-color: #3498db; color:white; border:none; border-radius:6px;">Salvar</button>
+            <div class="text-right">
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none">Salvar</button>
             </div>
         </form>
 
-        <hr>
+        <hr class="my-4">
 
-        <h4>Ações Cadastradas</h4>
-        <table style="width:100%; border-collapse: collapse; margin-top: 20px;">
+        <h4 class="text-lg font-semibold mb-3">Ações Cadastradas</h4>
+        <table class="w-full border-collapse mt-4">
             <thead>
-                <tr style="background-color: #f2f2f2;">
-                    <th style="padding: 10px; border: 1px solid #ccc;">Tipo</th>
-                    <th style="padding: 10px; border: 1px solid #ccc;">Data de Edição</th>
-                    <th style="padding: 10px; border: 1px solid #ccc;">Observação</th>
-                    <th style="padding: 10px; border: 1px solid #ccc;">Ações</th>
+                <tr class="bg-gray-100">
+                    <th class="py-2 px-4 text-sm font-medium text-gray-700 border-b">Tipo</th>
+                    <th class="py-2 px-4 text-sm font-medium text-gray-700 border-b">Data de Edição</th>
+                    <th class="py-2 px-4 text-sm font-medium text-gray-700 border-b">Observação</th>
+                    <th class="py-2 px-4 text-sm font-medium text-gray-700 border-b">Ações</th>
                 </tr>
             </thead>
             <tbody id="lista-acoes">
                 @foreach($convenio->acoes as $acao)
-                <tr style="background-color: #fff;">
-                    <td style="padding: 10px; border: 1px solid #ccc;">{{ ucfirst($acao->tipo) }}</td>
-                    <td style="padding: 10px; border: 1px solid #ccc;">{{ \Carbon\Carbon::parse($acao->data_edicao)->format('d/m/Y') }}</td>
-                    <td style="padding: 10px; border: 1px solid #ccc; word-break: break-word; white-space: normal;">{{ $acao->observacao }}</td>
-                    <td style="padding: 10px; border: 1px solid #ccc; text-align: center;">
-                        <button onclick="deletarAcao({{ $convenio->id }}, {{ $acao->id }}, this)" style="background-color: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
-                            Apagar
-                        </button>
+                <tr class="bg-white">
+                    <td class="py-2 px-4 border-b">{{ ucfirst($acao->tipo) }}</td>
+                    <td class="py-2 px-4 border-b">{{ \Carbon\Carbon::parse($acao->data_edicao)->format('d/m/Y') }}</td>
+                    <td class="py-2 px-4 border-b break-words whitespace-normal">{{ $acao->observacao }}</td>
+                    <td class="py-2 px-4 border-b text-center">
+                        <button onclick="deletarAcao({{ $convenio->id }}, {{ $acao->id }}, this)" class="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600">Apagar</button>
                     </td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
 
-        <button onclick="fecharModalAcoes()" style="position:absolute; top:10px; right:10px; background-color:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:4px;">X</button>
+        <button onclick="fecharModalAcoes()" class="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600">X</button>
     </div>
 </div>
 

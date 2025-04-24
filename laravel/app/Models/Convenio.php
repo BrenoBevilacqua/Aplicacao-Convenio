@@ -23,8 +23,17 @@ class Convenio extends Model
         'data_assinatura',
         'data_vigencia',
     ];
-    public function acoes()
-    {
+
+    public function acoes(){
     return $this->hasMany(Acao::class);
     }
+
+    public function acompanhamentos() {
+        return $this->hasMany(Acompanhamento::class);
+    }
+
+    public function contratos(){
+        return $this->hasMany(Contrato::class);
+    }
+
 }

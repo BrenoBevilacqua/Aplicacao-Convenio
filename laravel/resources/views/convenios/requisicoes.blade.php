@@ -1,5 +1,6 @@
 @extends('convenios.app')
 @section('content')
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <script> src="https://cdn.tailwindcss.com"</script>
 <div class="container mx-auto px-4">
     <h1 class="text-xl font-bold mb-4 text-center">Requisições de Cadastro</h1>

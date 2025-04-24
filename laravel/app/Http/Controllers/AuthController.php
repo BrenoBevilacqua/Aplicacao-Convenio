@@ -13,7 +13,7 @@ class AuthController extends Controller
     // Mostrar formulário de login
     public function login()
     {
-        return view('convenios.login');
+        return view('autenticacao.login');
     }
 
     // Processar login com username ou email
@@ -61,14 +61,12 @@ class AuthController extends Controller
         ]);
     }
     // Mostrar formulário de registro
-    public function showRegisterForm()
-    {
-        return view('convenios.register');
+    public function showRegisterForm(){
+        return view('autenticacao.register');
     }
 
     // Processar registro
-    public function register(Request $request)
-{
+    public function register(Request $request){
     $request->validate([
         'name' => 'required|string|max:255',
         'email' => 'nullable|email|unique:users',  // Tornando email opcional

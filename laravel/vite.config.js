@@ -9,6 +9,8 @@ export default defineConfig({
         ]),
     ],
     server: {
-        host: 'localhost',
+        host: true,  // Permite conexões externas
+        allowedHosts: 'all',
     },
+    base: '/',
 });

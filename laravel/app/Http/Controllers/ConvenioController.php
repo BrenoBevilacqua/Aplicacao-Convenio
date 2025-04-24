@@ -1,44 +1,37 @@
 <?php
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 use Illuminate\Http\Request;
 use App\Models\Convenio;
+use App\Models\Contrato;
 use App\Models\LogHistorico;
 use App\Models\Acao;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+// Funções relacionadas a convênios
 
 class ConvenioController extends Controller
 {
     // pagina inicial com tabelas
     public function index()
     {
-        $convenios = Convenio::paginate(3);
+        $convenios = Convenio::with(['acompanhamentos' => fn($query) => $query->latest()->limit(1),
+        'contratos' 
+            //$query->latest()->limit(1); // Pega o acompanhamento mais recente
+        ])->paginate(3);
 
         foreach ($convenios as $convenio) {
             $dataVigencia = Carbon::parse($convenio->data_vigencia);
             $hoje = Carbon::now();
-
             $convenio->dias_restantes = (int) $hoje->diffInDays($dataVigencia, false);
         }
 
         return view('convenios.index', compact('convenios'));
-    }
-  
-    // autenticação
-    /*public function authenticate(Request $request)
-    {
-        $credentials = $request->only('username', 'password');
+    }   
 
-        if (Auth::attempt($credentials, $request->remember)) {
-            return redirect()->intended(route('convenio.index'));
-        }
-
-        return back()->withErrors([
-            'username' => 'Usuário ou senha incorretos.',
-        ]);
-    }
-        */
 
     public function username()
     {
@@ -157,55 +150,55 @@ class ConvenioController extends Controller
         'data_modificacao' => now(),
     ]);
 
-    // Redirecionando para a página de index
+    // Redirecionando para a página de index + funções da página index
     return redirect(route('convenio.index'));
-}
-
-    public function edit($id)
-    {
-    $convenio = Convenio::with('acoes')->findOrFail($id);
-
-    return view('convenios.edit', array_merge(
-        ['convenio' => $convenio],
-        $this->dadosAuxiliares()
-    ));
     }
-    // editar convenio
-    public function update(Request $request, $id)
-    {
-        $convenio = Convenio::findOrFail($id);
 
-        $request->merge([
-            'valor_repasse' => str_replace(['.', ','], ['', '.'], $request->valor_repasse),
-            'valor_contrapartida' => str_replace(['.', ','], ['', '.'], $request->valor_contrapartida),
-            'valor_total' => str_replace(['.', ','], ['', '.'], $request->valor_total),
-        ]);
+        public function edit($id)
+        {
+        $convenio = Convenio::with('acoes')->findOrFail($id);
+
+        return view('convenios.edit', array_merge(
+            ['convenio' => $convenio],
+            $this->dadosAuxiliares()
+        ));
+        }
+        // editar convenio
+        public function update(Request $request, $id)
+        {
+            $convenio = Convenio::findOrFail($id);
+
+            $request->merge([
+                'valor_repasse' => str_replace(['.', ','], ['', '.'], $request->valor_repasse),
+                'valor_contrapartida' => str_replace(['.', ','], ['', '.'], $request->valor_contrapartida),
+                'valor_total' => str_replace(['.', ','], ['', '.'], $request->valor_total),
+            ]);
         
-        $validated = $request->validate([
-            'numero_convenio' => 'required',
-            'ano_convenio' => 'required',
-            'identificacao' => 'required',
-            'conta_vinculada' => 'nullable',
-            'objeto' => 'nullable',
-            'fonte_recursos' => 'nullable',
-            'concedente' => 'nullable',
-            'parlamentar' => 'nullable',
-            'natureza_despesa' => 'nullable',
-            'valor_repasse' => 'nullable|numeric',
-            'valor_total' => 'nullable|numeric',
-            'data_assinatura' => 'nullable|date',
-            'data_vigencia' => 'nullable|date',
-        ]);
+            $validated = $request->validate([
+                'numero_convenio' => 'required',
+                'ano_convenio' => 'required',
+                'identificacao' => 'required',
+                'conta_vinculada' => 'nullable',
+                'objeto' => 'nullable',
+                'fonte_recursos' => 'nullable',
+                'concedente' => 'nullable',
+                'parlamentar' => 'nullable',
+                'natureza_despesa' => 'nullable',
+                'valor_repasse' => 'nullable|numeric',
+                'valor_total' => 'nullable|numeric',
+                'data_assinatura' => 'nullable|date',
+                'data_vigencia' => 'nullable|date',
+            ]);
 
-        LogHistorico::create([
-            'user_id' => auth()->id(),
-            'acao' => 'Edição',
-            'numero_convenio' => $convenio->numero_convenio,
-            'ano_convenio' => $convenio->ano_convenio,
-            'data_modificacao' => now(),
-        ]);
+            LogHistorico::create([
+                'user_id' => auth()->id(),
+                'acao' => 'Edição',
+                'numero_convenio' => $convenio->numero_convenio,
+                'ano_convenio' => $convenio->ano_convenio,
+                'data_modificacao' => now(),
+            ]);
 
-        $convenio->update($validated);
+            $convenio->update($validated);
 
         return redirect()->route('convenio.index')->with('success', 'Convênio atualizado com sucesso!');
     }
@@ -239,7 +232,7 @@ class ConvenioController extends Controller
         return redirect()->route('convenio.index')->with('success', 'Convênio excluído com sucesso.');
     }
 
-    // acoes
+    // guardar ações
     public function storeAcao(Request $request, $id)
     {
         try {
@@ -273,12 +266,93 @@ class ConvenioController extends Controller
             ], 500);
         }
     }
+
+    // historico de modificações
     public function historico()
     {
         $logs = LogHistorico::with('user')->orderBy('data_modificacao', 'desc')->get(); // Obtem os logs de forma ordenada
         //dd($logs);
         return view('convenios.info', compact('logs'));
     }
+   
+    // exportar para pdf
+    public function exportarPdf($id)
+    {
+        $convenio = Convenio::findOrFail($id);
+        $pdf = Pdf::loadView('convenios.pdf', compact('convenio'));
+        return $pdf->download("convenio_{$convenio->id}.pdf");
+    }
+    
+    // guardar acompanhamento
+    public function storeAcompanhamento(Request $request, Convenio $convenio)
+    {
+        //\Log::info('Recebido status: ' . $request->status); // Log de status
+        //\Log::info('Recebido monitorado: ' . $request->monitorado);
+    
+        $request->validate([
+            'status' => 'required|in:em_execucao,finalizado,cancelado',
+            'monitorado' => 'required|boolean',
+        ]);
+    
+        $acompanhamento = $convenio->acompanhamentos()->create([
+            'status' => $request->status,
+            'monitorado' => $request->monitorado == '1',
+        ]);
+        //dd($acompanhamento->toArray());
+    
+        return response()->json([
+            'sucesso' => true,
+            'acompanhamento' => [
+                'status' => $acompanhamento->status,
+                'status_formatado' => ucfirst(str_replace('_', ' ', $acompanhamento->status)),
+                'monitorado' => $acompanhamento->monitorado,
+                'data_formatada' => $acompanhamento->created_at->format('d/m/Y H:i'),
+            ]
+        ]);
+    }
+
+    // guardar Contrato
+    public function storeContrato(Request $request, $convenioId)
+    {
+        $request->validate([
+            'numero_contrato' => 'required|string',
+            'objeto' => 'required|string',
+            'empresa_contratada' => 'required|string',
+            'valor' => 'required|numeric',
+            'data_assinatura' => 'required|date',
+            'validade_inicio' => 'required|date',
+            'validade_fim' => 'required|date|after_or_equal:validade_inicio',
+        ]);
+
+        $contrato = Contrato::create([
+            'convenio_id' => $convenioId,
+            'numero_contrato' => $request->numero_contrato,
+            'objeto' => $request->objeto,
+            'empresa_contratada' => $request->empresa_contratada,
+            'valor' => $request->valor,
+            'data_assinatura' => $request->data_assinatura,
+            'validade_inicio' => $request->validade_inicio,
+            'validade_fim' => $request->validade_fim,
+        ]);
+
+        return response()->json([
+            'sucesso' => true,
+            'contrato' => $contrato
+        ]);
+    }
+
+    // deletar contrato
+    public function destroyContrato($convenioId, $contratoId)
+    {
+        $contrato = Contrato::where('convenio_id', $convenioId)->findOrFail($contratoId);
+        $contrato->delete();
+
+        return response()->json(['sucesso' => true]);
+    }
+
+    
+
+    
    
 }
 

@@ -1,5 +1,5 @@
 @extends('convenios.app')
-
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 @section('content')
     <h2 class="text-xl font-bold mb-4 text-center">Histórico de Modificações</h2>
 

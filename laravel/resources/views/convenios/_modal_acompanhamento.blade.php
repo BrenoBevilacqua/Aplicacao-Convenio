@@ -1,12 +1,13 @@
 @vite('resources/js/app.js')  <!-- Para o JS -->
 @vite('resources/css/app.css')
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <div id="modalAcompanhamento" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.5); z-index: 9999;">
     <div style="background:white; width:80%; max-width:700px; margin:5% auto; padding:20px; border-radius:8px; position:relative; max-height:90%; overflow-y:auto; box-sizing: border-box;">
 
         <h3 style="margin-bottom: 20px;">Atualizar Acompanhamento</h3>
 
-        <form id="formNovoAcompanhamento">
+        <form id="formNovoAcompanhamento" action="#" method="POST">
             @csrf
             <input type="hidden" name="convenio_id" value="{{ $convenio->id }}">
 
@@ -20,7 +21,16 @@
             </div>
 
             <div style="margin-bottom: 15px;">
-            <label for="monitorado" style="display:block; margin-bottom: 5px;">Monitoramento</label>
+                <label for="porcentagem_conclusao" style="display:block; margin-bottom: 5px;">Porcentagem de Conclusão</label>
+                <div style="display:flex; align-items:center;">
+                    <input type="range" name="porcentagem_conclusao" id="porcentagem_conclusao" min="0" max="100" value="0" 
+                           style="flex-grow:1; margin-right:10px;" oninput="updatePorcentagemValue(this.value)">
+                    <span id="porcentagemValue">0%</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label for="monitorado" style="display:block; margin-bottom: 5px;">Monitoramento</label>
                 <select name="monitorado" id="monitorado" required class="form-select">
                     <option value="1">Monitorado</option>
                     <option value="0">Não Monitorado</option>
@@ -44,36 +54,54 @@ function fecharModalAcompanhamento() {
     document.getElementById('modalAcompanhamento').style.display = 'none';
 }
 
-document.getElementById('formNovoAcompanhamento').addEventListener('submit', function(e) {
-    e.preventDefault();
-    console.log("Interceptou o submit");
-    const form = e.target;
-    const formData = new FormData(form);
+function updatePorcentagemValue(val) {
+    document.getElementById('porcentagemValue').innerText = val + '%';
+}
 
-    fetch("{{ route('convenios.acompanhamentos.store', $convenio->id) }}", {
-        method: "POST",
-        headers: {
-            'X-CSRF-TOKEN': form.querySelector('[name=_token]').value,
-            'Accept': 'application/json'
-        },
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log("Resposta do backend:", data); // Log para depuração
-        if (data.sucesso) {
-            // Aqui, ao invés de tentar adicionar uma linha a uma tabela, 
-            // você pode simplesmente fechar o modal ou fazer outro tipo de feedback.
-            alert('Acompanhamento salvo com sucesso!');
-            form.reset();
-            fecharModalAcompanhamento();
-        } else {
-            alert('Erro ao salvar acompanhamento.');
-        }
-    })
-    .catch(error => {
-        console.error("Erro ao enviar acompanhamento:", error);
-        alert('Erro inesperado.');
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('formNovoAcompanhamento');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        console.log("Interceptou o submit");
+
+        const formData = new FormData(form);
+        const url = "{{ route('convenios.acompanhamentos.store', $convenio->id) }}";
+        
+        // Extrair o token CSRF do formulário
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                          form.querySelector('[name="_token"]')?.value;
+        
+        fetch(url, {
+            method: "POST",
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+                // Não incluir Content-Type para deixar o navegador definir com o boundary correto para FormData
+            },
+            body: formData  // O FormData será enviado como multipart/form-data
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erro na requisição: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Resposta do backend:", data);
+            if (data.sucesso) {
+                alert('Acompanhamento salvo com sucesso!');
+                form.reset();
+                fecharModalAcompanhamento();
+                // Opcional: recarregar a página para mostrar o novo acompanhamento
+                window.location.reload();
+            } else {
+                alert('Erro ao salvar acompanhamento: ' + (data.mensagem || 'Erro desconhecido'));
+            }
+        })
+        .catch(error => {
+            console.error("Erro ao enviar acompanhamento:", error);
+            alert('Erro inesperado: ' + error.message);
+        });
     });
-}); 
+});
 </script>

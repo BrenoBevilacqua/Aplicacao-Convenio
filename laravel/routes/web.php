@@ -41,6 +41,7 @@ Route::middleware('auth', 'logged_out')->group (function () {
 
         // rotas contratos
         Route::post('/convenios/{convenio}/contratos', [ConvenioController::class, 'storeContrato'])->name('convenios.contratos.store');
+        Route::get('/convenios/{convenio}/contratos', [ConvenioController::class, 'getContratos'])->name('convenios.contratos.index');
         Route::delete('/convenios/{convenio}/contratos/{contrato}', [ConvenioController::class, 'destroyContrato'])->name('convenios.contratos.destroy');
     });
 

@@ -1,5 +1,4 @@
-@vite('resources/js/app.js')  <!-- Para o JS -->
-@vite('resources/css/app.css')
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <div id="modalAcompanhamento" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.5); z-index: 9999;">
@@ -46,7 +45,7 @@
     </div>
 </div>
 <script>
-function abrirModalAcompanhamento() {
+/*function abrirModalAcompanhamento() {
     document.getElementById('modalAcompanhamento').style.display = 'block';
 }
 
@@ -56,7 +55,7 @@ function fecharModalAcompanhamento() {
 
 function updatePorcentagemValue(val) {
     document.getElementById('porcentagemValue').innerText = val + '%';
-}
+}*/
 
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('formNovoAcompanhamento');

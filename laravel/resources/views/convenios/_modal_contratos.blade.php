@@ -1,4 +1,5 @@
 <!-- Modal Contratos -->
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <div id="modalContratos" class="fixed inset-0 flex justify-center items-center bg-gray-900 bg-opacity-30 backdrop-blur-sm hidden z-50">
     <div class="bg-white p-5 rounded-lg shadow-lg w-11/12 max-w-3xl relative">

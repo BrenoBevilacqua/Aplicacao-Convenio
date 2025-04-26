@@ -1,6 +1,7 @@
 @extends('convenios.app')
 @section('content')
 @include('convenios._modal_contratos')
+@vite('resources/js/app.js')
 <div class="container mx-auto px-4 py-8 max-w-7xl">
     <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold text-gray-800">Lista de Convênios</h1>
@@ -152,8 +153,12 @@
                                     <span class="text-gray-700">R$ {{ number_format($convenio->valor_total, 2, ',', '.') }}</span>
                                 </div>
                                 <div>
-                                    <span class="font-medium text-gray-900">Liberado:</span>
+                                    <span class="font-medium text-gray-900">Repasse:</span>
                                     <span class="text-gray-700">R$ {{ number_format($convenio->valor_repasse, 2, ',', '.') }}</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium text-gray-900">Contrapartida:</span>
+                                    <span class="text-gray-700">R$ {{ number_format($convenio->valor_liberado, 2, ',', '.') }}</span>
                                 </div>
                                 <div>
                                     <span class="font-medium text-gray-900">Assinatura:</span>
@@ -278,122 +283,4 @@
         {{ $convenios->appends(request()->query())->onEachSide(2)->links() }}
     </div>
 </div>
-
-<script>
-function abrirModalContratos(convenioId) {
-    // Setar o ID do convênio no campo oculto
-    document.getElementById('contratoConvenioId').value = convenioId;
-
-    // Exibir o modal
-    const modal = document.getElementById('modalContratos');
-    modal.classList.remove('hidden');
-    
-    // Buscar os contratos para o convênio selecionado
-    fetch(`/convenios/${convenioId}/contratos`)
-        .then(res => res.json())
-        .then(data => {
-            const tbody = document.getElementById('lista-contratos');
-            
-            // Verificar se o elemento #lista-contratos existe
-            if (!tbody) {
-                console.error('Elemento #lista-contratos não encontrado no DOM');
-                return;
-            }
-            
-            tbody.innerHTML = ''; // Limpar a tabela
-
-            if (!data.sucesso || data.contratos.length === 0) {
-                tbody.innerHTML = `
-                    <tr class="bg-white">
-                        <td colspan="5" class="p-4 text-center text-gray-500">
-                            Nenhum contrato encontrado para este convênio
-                        </td>
-                    </tr>`;
-                return;
-            }
-
-            // Preencher a tabela com os contratos
-            data.contratos.forEach(c => {
-                // Verificar se o contrato está vencido
-                const hoje = new Date();
-                const dataFim = new Date(c.validade_fim);
-                const vencido = dataFim < hoje;
-                const classeVencimento = vencido ? 'text-red-600 font-medium' : '';
-                
-                tbody.innerHTML += `
-                    <tr class="bg-white hover:bg-gray-50">
-                        <td class="p-3 border text-xs">${c.numero_contrato}</td>
-                        <td class="p-3 border text-xs">${c.empresa_contratada}</td>
-                        <td class="p-3 border text-xs font-medium">R$ ${parseFloat(c.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                        <td class="p-3 border text-xs ${classeVencimento}">
-                            ${new Date(c.validade_inicio).toLocaleDateString('pt-BR')} a 
-                            ${new Date(c.validade_fim).toLocaleDateString('pt-BR')}
-                            ${vencido ? ' (Vencido)' : ''}
-                        </td>
-                        <td class="p-3 border text-center">
-                            <button onclick="deletarContrato(${convenioId}, ${c.id}, this)" 
-                                    class="bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition-colors flex items-center mx-auto text-xs">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                </svg>
-                                Excluir
-                            </button>
-                        </td>
-                    </tr>`;
-            });
-        })
-        .catch(error => {
-            console.error('Erro ao buscar contratos:', error);
-            const tbody = document.getElementById('lista-contratos');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr class="bg-white">
-                        <td colspan="5" class="p-4 text-center text-red-500">
-                            Erro ao carregar contratos. Tente novamente.
-                        </td>
-                    </tr>`;
-            }
-        });
-}
-
-function deletarContrato(convenioId, contratoId, btn) {
-    if (confirm('Tem certeza que deseja excluir este contrato?')) {
-        fetch(`/convenios/${convenioId}/contratos/${contratoId}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.sucesso) {
-                const row = btn.closest('tr');
-                row.remove();
-                
-                // Atualizar o contador de contratos na tabela principal
-                const contador = document.querySelector(`tr[data-convenio-id="${convenioId}"] .contador-contratos`);
-                if (contador) {
-                    const novoValor = parseInt(contador.textContent) - 1;
-                    contador.textContent = novoValor;
-                }
-                
-                // Recarregar a página para atualizar os contadores
-                window.location.reload();
-            } else {
-                alert('Erro ao excluir contrato: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
-            alert('Ocorreu um erro ao excluir o contrato.');
-        });
-    }
-}
-
-function fecharModalContratos() {
-    document.getElementById('modalContratos').classList.add('hidden');
-    document.getElementById('formNovoContrato').reset();
-}
-</script>
 @endsection

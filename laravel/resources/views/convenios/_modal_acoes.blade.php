@@ -1,5 +1,4 @@
-@vite('resources/js/app.js')  <!-- Para o JS -->
-@vite('resources/css/app.css')
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <div id="modalAcoes" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.5); z-index: 9999;">
     <div style="background:white; width:80%; max-width:700px; margin:5% auto; padding:20px; border-radius:8px; position:relative; max-height:90%; overflow-y:auto; box-sizing: border-box;">

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use App\Models\Convenio;
 
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,6 @@ class Acao extends Model
 
     public function convenio()
     {
-    return $this->belongsTo(Convenio::class);
+        return $this->belongsTo(Convenio::class);
     }
 }

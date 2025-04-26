@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -19,69 +21,69 @@ class ConvenioController extends Controller
     public function index(Request $request)
     {
         // Iniciar a query
-        $query = Convenio::with(['acompanhamentos' => fn($query) => $query->latest()->limit(1),
-            'contratos']);
-    
+        $query = Convenio::with([
+            'acompanhamentos' => fn($query) => $query->latest()->limit(1),
+            'contratos'
+        ]);
+
         // Aplicar filtros
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('identificacao', 'like', "%{$search}%")
-                  ->orWhere('numero_convenio', 'like', "%{$search}%")
-                  ->orWhere('objeto', 'like', "%{$search}%");
+                    ->orWhere('numero_convenio', 'like', "%{$search}%")
+                    ->orWhere('objeto', 'like', "%{$search}%");
             });
         }
-    
+
         // Filtro por status
         if ($request->has('status') && !empty($request->status)) {
             $status = $request->status;
-            $query->whereHas('acompanhamentos', function($q) use ($status) {
+            $query->whereHas('acompanhamentos', function ($q) use ($status) {
                 $q->where('status', $status)
-                  ->orderBy('created_at', 'desc');
+                    ->orderBy('created_at', 'desc');
             });
         }
-    
+
         // Filtro por validade
         if ($request->has('validade') && !empty($request->validade)) {
             $hoje = Carbon::now();
-            
+
             if ($request->validade == 'vigentes') {
                 $query->where('data_vigencia', '>=', $hoje);
-            } 
-            elseif ($request->validade == 'vencidos') {
+            } elseif ($request->validade == 'vencidos') {
                 $query->where('data_vigencia', '<', $hoje);
-            }
-            elseif ($request->validade == '30dias') {
+            } elseif ($request->validade == '30dias') {
                 $trintaDiasDepois = $hoje->copy()->addDays(30);
                 $query->whereBetween('data_vigencia', [$hoje, $trintaDiasDepois]);
             }
         }
-    
+
         // Filtro por contratos vencidos
         if ($request->has('contratos_vencidos') && $request->contratos_vencidos == '1') {
             $hoje = Carbon::now()->format('Y-m-d');
-            
-            $query->whereHas('contratos', function($q) use ($hoje) {
+
+            $query->whereHas('contratos', function ($q) use ($hoje) {
                 $q->where('validade_fim', '<', $hoje);
             });
         }
-    
+
         // Paginação com 10 itens por página
         $convenios = $query->paginate(10);
-    
+
         // Calcular dias restantes e contar contratos vencidos para cada convênio
         foreach ($convenios as $convenio) {
             $dataVigencia = Carbon::parse($convenio->data_vigencia);
             $hoje = Carbon::now();
             $convenio->dias_restantes = (int) $hoje->diffInDays($dataVigencia, false);
-            
+
             // Contar contratos vencidos
             $convenio->contratos_vencidos_count = $convenio->contratos
-                ->filter(function($contrato) {
+                ->filter(function ($contrato) {
                     return Carbon::parse($contrato->validade_fim)->isPast();
                 })->count();
         }
-    
+
         return view('convenios.index', compact('convenios'));
     }
 
@@ -140,7 +142,7 @@ class ConvenioController extends Controller
                 'Dep Estadual - MARCIO FERNANDES',
                 'Dep Estadual - Onevan de Matos',
                 'Dep Estadual - Pedro Kemp',
-                'Dep Estadual -Pedrossian Neto',
+                'Dep Estadual - Pedrossian Neto',
                 'Dep Estadual - Rinaldo Modesto',
                 'Dep Estadual - Zé Teixeira',
                 'Dep Estadual - Roberto Hashioka',
@@ -165,97 +167,94 @@ class ConvenioController extends Controller
     // criar convenio
     public function store(Request $request)
     {
-    // Validação dos dados
+        // Formatação dos valores monetários antes da validação
+        $request->merge([
+            'valor_repasse' => str_replace(['.', ','], ['', '.'], $request->valor_repasse),
+            'valor_contrapartida' => str_replace(['.', ','], ['', '.'], $request->valor_contrapartida),
+        ]);
+
+        // Validação dos dados
         $data = $request->validate([
             'numero_convenio' => 'required|numeric',
             'ano_convenio' => 'required|numeric',
             'identificacao' => 'required|string',
             'objeto' => 'required|string',
             'fonte_recursos' => 'required|string',
-            'valor_repasse'=> 'required|numeric',
+            'valor_repasse' => 'required|numeric',
             'valor_contrapartida' => 'required|numeric',
             'concedente' => 'required|string',
             'parlamentar' => 'required|string',
             'conta_vinculada' => 'required|string',
             'natureza_despesa' => 'required|string',
             'data_assinatura' => 'required|date',
-            'data_vigencia'=> 'required|date',
+            'data_vigencia' => 'required|date',
         ]);
 
-    // Calculando o valor total
-    $data['valor_total'] = $data['valor_repasse'] + $data['valor_contrapartida'];
+        // Calculando o valor total
+        $data['valor_total'] = $data['valor_repasse'] + $data['valor_contrapartida'];
 
-    // Formatação dos valores monetários
-    $request->merge([
-        'valor_repasse' => str_replace(['.', ','], ['', '.'], $request->valor_repasse),
-        'valor_contrapartida' => str_replace(['.', ','], ['', '.'], $request->valor_contrapartida),
-    ]);
+        // Criando o novo convênio
+        $newConvenio = Convenio::create($data);
 
-    // Criando o novo convênio
-    $newConvenio = Convenio::create($data);
+        // Registrando o histórico de criação
+        LogHistorico::create([
+            'user_id' => auth()->id(),
+            'acao' => 'Criação',
+            'numero_convenio' => $newConvenio->numero_convenio,
+            'ano_convenio' => $newConvenio->ano_convenio,
+            'data_modificacao' => now(),
+        ]);
 
-    // Registrando o histórico de criação
-    LogHistorico::create([
-        'user_id' => auth()->id(),
-        'acao' => 'Criação',
-        'numero_convenio' => $newConvenio->numero_convenio,
-        'ano_convenio' => $newConvenio->ano_convenio,
-        'data_modificacao' => now(),
-    ]);
-
-    // Redirecionando para a página de index + funções da página index
-    return redirect(route('convenio.index'));
+        return redirect(route('convenio.index'));
     }
 
-        public function edit($id)
-        {
+    public function edit($id)
+    {
         $convenio = Convenio::with('acoes')->findOrFail($id);
-
         return view('convenios.edit', array_merge(
             ['convenio' => $convenio],
             $this->dadosAuxiliares()
         ));
-        }
-        // editar convenio
-        public function update(Request $request, $id)
-        {
-            $convenio = Convenio::findOrFail($id);
+    }
+    // editar convenio
+    public function update(Request $request, $id)
+    {
+        $convenio = Convenio::findOrFail($id);
+        $request->merge([
+            'valor_repasse' => str_replace(['.', ','], ['', '.'], $request->valor_repasse),
+            'valor_contrapartida' => str_replace(['.', ','], ['', '.'], $request->valor_contrapartida),
+            'valor_total' => str_replace(['.', ','], ['', '.'], $request->valor_total),
+        ]);
 
-            $request->merge([
-                'valor_repasse' => str_replace(['.', ','], ['', '.'], $request->valor_repasse),
-                'valor_contrapartida' => str_replace(['.', ','], ['', '.'], $request->valor_contrapartida),
-                'valor_total' => str_replace(['.', ','], ['', '.'], $request->valor_total),
-            ]);
-        
-            $validated = $request->validate([
-                'numero_convenio' => 'required',
-                'ano_convenio' => 'required',
-                'identificacao' => 'required',
-                'conta_vinculada' => 'nullable',
-                'objeto' => 'nullable',
-                'fonte_recursos' => 'nullable',
-                'concedente' => 'nullable',
-                'parlamentar' => 'nullable',
-                'natureza_despesa' => 'nullable',
-                'valor_repasse' => 'nullable|numeric',
-                'valor_total' => 'nullable|numeric',
-                'data_assinatura' => 'nullable|date',
-                'data_vigencia' => 'nullable|date',
-            ]);
+        $validated = $request->validate([
+            'numero_convenio' => 'required',
+            'ano_convenio' => 'required',
+            'identificacao' => 'required',
+            'conta_vinculada' => 'nullable',
+            'objeto' => 'nullable',
+            'fonte_recursos' => 'nullable',
+            'concedente' => 'nullable',
+            'parlamentar' => 'nullable',
+            'natureza_despesa' => 'nullable',
+            'valor_repasse' => 'nullable|numeric',
+            'valor_total' => 'nullable|numeric',
+            'data_assinatura' => 'nullable|date',
+            'data_vigencia' => 'nullable|date',
+        ]);
 
-            LogHistorico::create([
-                'user_id' => auth()->id(),
-                'acao' => 'Edição',
-                'numero_convenio' => $convenio->numero_convenio,
-                'ano_convenio' => $convenio->ano_convenio,
-                'data_modificacao' => now(),
-            ]);
+        LogHistorico::create([
+            'user_id' => auth()->id(),
+            'acao' => 'Edição',
+            'numero_convenio' => $convenio->numero_convenio,
+            'ano_convenio' => $convenio->ano_convenio,
+            'data_modificacao' => now(),
+        ]);
 
-            $convenio->update($validated);
+        $convenio->update($validated);
 
         return redirect()->route('convenio.index')->with('success', 'Convênio atualizado com sucesso!');
     }
-    
+
     // deletar convenio
     public function destroy($convenioId, $acaoId = null)
     {
@@ -269,7 +268,7 @@ class ConvenioController extends Controller
             $acao->delete();
             return response()->json(['sucesso' => true]);
         }
-   
+
         $convenio = Convenio::findOrFail($convenioId);
 
         LogHistorico::create([
@@ -287,183 +286,192 @@ class ConvenioController extends Controller
 
     // guardar ações
     public function storeAcao(Request $request, $id)
-{
-    try {
-        $request->validate([
-            'tipo' => 'required|in:concedente,convenente',
-            'observacao' => 'required|string',
-            'data_edicao' => 'required|date',
-        ]);
-        
-        // Verificar se já existe uma ação para este convênio
-        $acao = Acao::where('convenio_id', $id)->first();
-        
-        if ($acao) {
-            // Se existe, atualizar em vez de criar uma nova
-            $acao->tipo = $request->tipo;
-            $acao->observacao = $request->observacao;
-            $acao->data_edicao = $request->data_edicao;
-            $acao->save();
-        } else {
-            // Se não existe, criar uma nova
-            $acao = new Acao();
-            $acao->convenio_id = $id;
-            $acao->tipo = $request->tipo;
-            $acao->observacao = $request->observacao;
-            $acao->data_edicao = $request->data_edicao;
-            $acao->save();
+    {
+        try {
+            $request->validate([
+                'tipo' => 'required|in:concedente,convenente',
+                'observacao' => 'required|string',
+                'data_edicao' => 'required|date',
+            ]);
+
+            // Verificar se já existe uma ação para este convênio
+            $acao = Acao::where('convenio_id', $id)->first();
+
+            if ($acao) {
+                // Se existe, atualizar em vez de criar uma nova
+                $acao->tipo = $request->tipo;
+                $acao->observacao = $request->observacao;
+                $acao->data_edicao = $request->data_edicao;
+                $acao->save();
+            } else {
+                // Se não existe, criar uma nova
+                $acao = new Acao();
+                $acao->convenio_id = $id;
+                $acao->tipo = $request->tipo;
+                $acao->observacao = $request->observacao;
+                $acao->data_edicao = $request->data_edicao;
+                $acao->save();
+            }
+
+            return response()->json([
+                'sucesso' => true,
+                'acao' => [
+                    'id' => $acao->id,
+                    'tipo' => $acao->tipo,
+                    'data_edicao_formatada' => Carbon::parse($acao->data_edicao)->format('d/m/Y'),
+                    'observacao' => $acao->observacao,
+                    'convenio_id' => $acao->convenio_id
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'sucesso' => false,
+                'mensagem' => 'Erro ao salvar ação: ' . $e->getMessage()
+            ], 500);
         }
-    
-        return response()->json([
-            'sucesso' => true,
-            'acao' => [
-                'id' => $acao->id,
-                'tipo' => $acao->tipo,
-                'data_edicao_formatada' => Carbon::parse($acao->data_edicao)->format('d/m/Y'),
-                'observacao' => $acao->observacao,
-                'convenio_id' => $acao->convenio_id
-            ]
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'sucesso' => false,
-            'mensagem' => 'Erro ao salvar ação: ' . $e->getMessage()
-        ], 500);
     }
-}
 
     // historico de modificações
-    public function historico(){
-        $logs = LogHistorico::with('user')->orderBy('data_modificacao', 'desc')->get(); // Obtem os logs de forma ordenada
-    
-        // Calcular convenios vencidos (onde data_vigencia é menor que a data atual)
+    public function historico(Request $request)
+    {
+        $logs = LogHistorico::with('user')
+            ->orderBy('data_modificacao', 'desc')
+            ->paginate(10); // Paginação com 10 itens por página
+
+        // Calcular convenios vencidos
         $conveniosVencidos = Convenio::where('data_vigencia', '<', now())->count();
-    
-        // Calcular contratos vencidos (onde validade_fim é menor que a data atual)
+
+        // Calcular contratos vencidos
         $contratosVencidos = Contrato::where('validade_fim', '<', now())->count();
-    
+
         // Calcular valor total de repasses dos convênios ativos
         $valorTotalRepasses = Convenio::where('data_vigencia', '>=', now())
-        ->sum('valor_repasse');
-    
+            ->sum('valor_repasse');
+
         return view('convenios.info', compact('logs', 'conveniosVencidos', 'contratosVencidos', 'valorTotalRepasses'));
     }
-   
+
     // exportar para pdf
     public function exportarPdf($id)
     {
         $convenio = Convenio::findOrFail($id);
-        $pdf = Pdf::loadView('convenios.pdf', compact('convenio'));
+        $pdf = Pdf::loadView('convenios.pdf', compact('convenio'))->setPaper('a4', 'landscape');;
         return $pdf->download("convenio_{$convenio->id}.pdf");
     }
-    
+
     // guardar acompanhamento
     public function storeAcompanhamento(Request $request, Convenio $convenio)
-{
-    Log::info('Requisição de acompanhamento recebida', [
-        'convenio_id' => $convenio->id,
-        'dados' => $request->all(),
-        'método' => $request->method()
-    ]);
+    {
+        Log::info('Requisição de acompanhamento recebida', [
+            'convenio_id' => $convenio->id,
+            'dados' => $request->all(),
+            'método' => $request->method()
 
-    $request->validate([
-        'status' => 'required|in:em_execucao,finalizado,cancelado',
-        'monitorado' => 'required|boolean',
-        'porcentagem_conclusao' => 'required|integer|min:0|max:100',
-    ]);
-
-    // Verificar se já existe um acompanhamento para este convênio
-    $acompanhamento = $convenio->acompanhamentos()->latest()->first();
-
-    if ($acompanhamento) {
-        // Se existe, atualizar em vez de criar um novo
-        $acompanhamento->update([
-            'status' => $request->status,
-            'monitorado' => $request->monitorado == '1',
-            'porcentagem_conclusao' => $request->porcentagem_conclusao,
         ]);
-    } else {
-        // Se não existe, criar um novo
-        $acompanhamento = $convenio->acompanhamentos()->create([
-            'status' => $request->status,
-            'monitorado' => $request->monitorado == '1',
-            'porcentagem_conclusao' => $request->porcentagem_conclusao,
-        ]);
-    }
-    
-    Log::info('Acompanhamento atualizado ou criado', ['acompanhamento' => $acompanhamento->toArray()]);
 
-    return response()->json([
-        'sucesso' => true,
-        'acompanhamento' => [
-            'status' => $acompanhamento->status,
-            'status_formatado' => ucfirst(str_replace('_', ' ', $acompanhamento->status)),
-            'monitorado' => $acompanhamento->monitorado,
-            'porcentagem_conclusao' => $acompanhamento->porcentagem_conclusao,
-            'data_formatada' => $acompanhamento->created_at->format('d/m/Y H:i'),
-        ]
-    ]);
-}
-
-    // guardar Contrato
-    public function storeContrato(Request $request, $convenioId)
-{
-    $request->validate([
-        'numero_contrato' => 'required|string',
-        'objeto' => 'required|string',
-        'empresa_contratada' => 'required|string',
-        'valor' => 'required|numeric|min:0',
-        'data_assinatura' => 'required|date',
-        'validade_inicio' => 'required|date',
-        'validade_fim' => 'required|date|after_or_equal:validade_inicio',
-    ]);
-    
-    try {
-        $contrato = Contrato::create([
-            'convenio_id' => $convenioId,
-            'numero_contrato' => $request->numero_contrato,
-            'objeto' => $request->objeto,
-            'empresa_contratada' => $request->empresa_contratada,
-            'valor' => $request->valor,
-            'data_assinatura' => $request->data_assinatura,
-            'validade_inicio' => $request->validade_inicio,
-            'validade_fim' => $request->validade_fim,
+        $request->validate([
+            'status' => 'required|in:em_execucao,finalizado,cancelado',
+            'monitorado' => 'required|boolean',
+            'porcentagem_conclusao' => 'required|integer|min:0|max:100',
+            'valor_liberado' => 'required|numeric',
         ]);
+
+        // Verificar se já existe um acompanhamento para este convênio
+        $acompanhamento = $convenio->acompanhamentos()->latest()->first();
+
+        if ($acompanhamento) {
+            // Se existe, atualizar em vez de criar um novo
+            $acompanhamento->update([
+                'status' => $request->status,
+                'monitorado' => $request->monitorado == '1',
+                'porcentagem_conclusao' => $request->porcentagem_conclusao,
+                'valor_liberado' => str_replace(['.', ','], ['', '.'], $request->valor_liberado),
+            ]);
+        } else {
+            // Se não existe, criar um novo
+            $acompanhamento = $convenio->acompanhamentos()->create([
+                'status' => $request->status,
+                'monitorado' => $request->monitorado == '1',
+                'porcentagem_conclusao' => $request->porcentagem_conclusao,
+                'valor_liberado' => str_replace(['.', ','], ['', '.'], $request->valor_liberado),
+            ]);
+        }
+
+        Log::info('Acompanhamento atualizado ou criado', ['acompanhamento' => $acompanhamento->toArray()]);
 
         return response()->json([
             'sucesso' => true,
-            'contrato' => $contrato
+            'acompanhamento' => [
+                'status' => $acompanhamento->status,
+                'status_formatado' => ucfirst(str_replace('_', ' ', $acompanhamento->status)),
+                'monitorado' => $acompanhamento->monitorado,
+                'porcentagem_conclusao' => $acompanhamento->porcentagem_conclusao,
+                'data_formatada' => $acompanhamento->created_at->format('d/m/Y H:i'),
+                'valor_liberado' => str_replace(['.', ','], ['', '.'], $request->valor_liberado),
+            ]
         ]);
-    } catch (\Exception $e) {
+        
+    }
+
+    // guardar Contrato
+    public function storeContrato(Request $request, $convenioId)
+    {
+        $request->validate([
+            'numero_contrato' => 'required|string',
+            'objeto' => 'required|string',
+            'empresa_contratada' => 'required|string',
+            'valor' => 'required|numeric|min:0',
+            'data_assinatura' => 'required|date',
+            'validade_inicio' => 'required|date',
+            'validade_fim' => 'required|date|after_or_equal:validade_inicio',
+        ]);
+
+        try {
+            $contrato = Contrato::create([
+                'convenio_id' => $convenioId,
+                'numero_contrato' => $request->numero_contrato,
+                'objeto' => $request->objeto,
+                'empresa_contratada' => $request->empresa_contratada,
+                'valor' => $request->valor,
+                'data_assinatura' => $request->data_assinatura,
+                'validade_inicio' => $request->validade_inicio,
+                'validade_fim' => $request->validade_fim,
+            ]);
+
+            return response()->json([
+                'sucesso' => true,
+                'contrato' => $contrato
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'sucesso' => false,
+                'mensagem' => 'Erro ao salvar contrato: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    public function getContratos($id)
+    {
+        $convenio = Convenio::findOrFail($id);
+        $contratos = $convenio->contratos;
+
+        $contratosFormatados = $contratos->map(function ($contrato) {
+            return [
+                'id' => $contrato->id,
+                'numero_contrato' => $contrato->numero_contrato,
+                'objeto' => $contrato->objeto,
+                'empresa_contratada' => $contrato->empresa_contratada,
+                'valor' => $contrato->valor,
+                'data_assinatura' => $contrato->data_assinatura,
+                'validade_inicio' => $contrato->validade_inicio,
+                'validade_fim' => $contrato->validade_fim,
+            ];
+        });
+
         return response()->json([
-            'sucesso' => false,
-            'mensagem' => 'Erro ao salvar contrato: ' . $e->getMessage()
-        ], 500);
+            'sucesso' => true,
+            'contratos' => $contratosFormatados
+        ]);
     }
-    }
-public function getContratos($id)
-{
-    $convenio = Convenio::findOrFail($id);
-    $contratos = $convenio->contratos;
-    
-    $contratosFormatados = $contratos->map(function($contrato) {
-        return [
-            'id' => $contrato->id,
-            'numero_contrato' => $contrato->numero_contrato,
-            'objeto' => $contrato->objeto,
-            'empresa_contratada' => $contrato->empresa_contratada,
-            'valor' => $contrato->valor,
-            'data_assinatura' => $contrato->data_assinatura,
-            'validade_inicio' => $contrato->validade_inicio,
-            'validade_fim' => $contrato->validade_fim,
-        ];
-    });
-    
-    return response()->json([
-        'sucesso' => true,
-        'contratos' => $contratosFormatados
-    ]);
-}
 
     // deletar contrato
     public function destroyContrato($convenioId, $contratoId)
@@ -473,11 +481,4 @@ public function getContratos($id)
 
         return response()->json(['sucesso' => true]);
     }
-    
-
-    
-
-    
-   
 }
-

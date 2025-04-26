@@ -6,7 +6,7 @@
 
         <h3 style="margin-bottom: 20px;">Atualizar Acompanhamento</h3>
 
-        <form id="formNovoAcompanhamento" action="#" method="POST">
+        <form id="formNovoAcompanhamento" data-action="{{ route('convenios.acompanhamentos.store', $convenio->id) }}" method="POST">
             @csrf
             <input type="hidden" name="convenio_id" value="{{ $convenio->id }}">
 
@@ -22,8 +22,8 @@
             <div style="margin-bottom: 15px;">
                 <label for="porcentagem_conclusao" style="display:block; margin-bottom: 5px;">Porcentagem de Conclusão</label>
                 <div style="display:flex; align-items:center;">
-                    <input type="range" name="porcentagem_conclusao" id="porcentagem_conclusao" min="0" max="100" value="0" 
-                           style="flex-grow:1; margin-right:10px;" oninput="updatePorcentagemValue(this.value)">
+                    <input type="range" name="porcentagem_conclusao" id="porcentagem_conclusao" min="0" max="100" value="0"
+                        style="flex-grow:1; margin-right:10px;" oninput="updatePorcentagemValue(this.value)">
                     <span id="porcentagemValue">0%</span>
                 </div>
             </div>
@@ -36,6 +36,15 @@
                 </select>
             </div>
 
+            <div>
+                <label class="block font-bold text-gray-700 mb-1">Valor Liberado</label>
+                <input type="text" id="valor_liberado" name="valor_liberado"
+                    class="w-full border border-gray-300 rounded px-3 py-2 money"
+                    value="{{ old('valor_liberado') }}">
+            </div>
+
+            
+            <br>
             <div style="text-align:right;">
                 <button type="submit" style="padding: 10px 20px; background-color: #3498db; color:white; border:none; border-radius:6px;">Salvar</button>
             </div>
@@ -44,63 +53,3 @@
         <button onclick="fecharModalAcompanhamento()" style="position:absolute; top:10px; right:10px; background-color:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:4px;">X</button>
     </div>
 </div>
-<script>
-/*function abrirModalAcompanhamento() {
-    document.getElementById('modalAcompanhamento').style.display = 'block';
-}
-
-function fecharModalAcompanhamento() {
-    document.getElementById('modalAcompanhamento').style.display = 'none';
-}
-
-function updatePorcentagemValue(val) {
-    document.getElementById('porcentagemValue').innerText = val + '%';
-}*/
-
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('formNovoAcompanhamento');
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        console.log("Interceptou o submit");
-
-        const formData = new FormData(form);
-        const url = "{{ route('convenios.acompanhamentos.store', $convenio->id) }}";
-        
-        // Extrair o token CSRF do formulário
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
-                          form.querySelector('[name="_token"]')?.value;
-        
-        fetch(url, {
-            method: "POST",
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,
-                'Accept': 'application/json',
-                // Não incluir Content-Type para deixar o navegador definir com o boundary correto para FormData
-            },
-            body: formData  // O FormData será enviado como multipart/form-data
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Erro na requisição: ' + response.status);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("Resposta do backend:", data);
-            if (data.sucesso) {
-                alert('Acompanhamento salvo com sucesso!');
-                form.reset();
-                fecharModalAcompanhamento();
-                // Opcional: recarregar a página para mostrar o novo acompanhamento
-                window.location.reload();
-            } else {
-                alert('Erro ao salvar acompanhamento: ' + (data.mensagem || 'Erro desconhecido'));
-            }
-        })
-        .catch(error => {
-            console.error("Erro ao enviar acompanhamento:", error);
-            alert('Erro inesperado: ' + error.message);
-        });
-    });
-});
-</script>

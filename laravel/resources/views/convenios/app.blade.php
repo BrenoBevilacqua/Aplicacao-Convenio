@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestão de Convênios</title>
@@ -17,6 +18,7 @@
 
     @stack('styles')
 </head>
+
 <body class="bg-gray-100 text-gray-800">
 
     {{-- Layout principal com sidebar fixa --}}
@@ -28,32 +30,32 @@
                 <h2 class="text-lg font-semibold mb-8">Convênios</h2>
 
                 <a href="{{ route('convenio.index') }}"
-                   class="mb-3 block px-4 py-2 rounded transition-all
+                    class="mb-3 block px-4 py-2 rounded transition-all
                           {{ request()->routeIs('convenio.index') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
-                   Lista de Convênios
+                    Lista de Convênios
                 </a>
 
                 <a href="{{ route('convenios.info') }}"
-                   class="mb-3 block px-4 py-2 rounded transition-all
+                    class="mb-3 block px-4 py-2 rounded transition-all
                           {{ request()->routeIs('convenios.info') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
-                   Dados
+                    Dados
                 </a>
 
                 @auth
-                    @if (auth()->user()->role === 'admin_master')
-                        <a href="{{ route('admin.requisicoes') }}"
-                           class="mb-3 block px-4 py-2 rounded transition-all
+                @if (auth()->user()->role === 'admin_master')
+                <a href="{{ route('admin.requisicoes') }}"
+                    class="mb-3 block px-4 py-2 rounded transition-all
                                   {{ request()->routeIs('admin.requisicoes') ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
-                           Ver Requisições
-                        </a>
-                    @endif
+                    Ver Requisições
+                </a>
+                @endif
                 @endauth
             </div>
 
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button type="submit"
-                        class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded transition-all">
+                    class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded transition-all">
                     Logout
                 </button>
             </form>
@@ -70,4 +72,5 @@
 
     @stack('scripts')
 </body>
+
 </html>

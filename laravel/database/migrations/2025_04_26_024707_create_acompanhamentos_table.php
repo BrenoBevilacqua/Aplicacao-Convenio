@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -15,8 +16,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('convenio_id')->constrained()->onDelete('cascade');
             $table->enum('status', ['em_execucao', 'finalizado', 'cancelado']);
+            
             $table->boolean('monitorado')->default(false);
-            $table->timestamps(); // cria created_at e updated_at
+            $table->decimal('valor_liberado', 15, 2)->default(0);
+            $table->timestamps();
         });
     }
 

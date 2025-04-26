@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta charset="UTF-8">
     <title>Registrar Administrador</title>
     <style>
@@ -19,7 +20,7 @@
             background-color: white;
             padding: 30px 40px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
         }
@@ -89,16 +90,17 @@
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <h2>Registrar Administrador</h2>
 
         @if ($errors->any())
-            <div class="error-message">
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
+        <div class="error-message">
+            @foreach ($errors->all() as $error)
+            <p>{{ $error }}</p>
+            @endforeach
+        </div>
         @endif
 
         <form action="{{ route('register.submit') }}" method="POST">
@@ -137,4 +139,5 @@
         </div>
     </div>
 </body>
+
 </html>

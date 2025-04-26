@@ -9,7 +9,7 @@ class LogHistorico extends Model
         'data_modificacao' => 'datetime',
     ];
     
-    protected $table = 'log_historico'; // Nome correto da tabela no banco
+    protected $table = 'log_historico'; 
 
     protected $fillable = [
         'user_id',

@@ -5,29 +5,39 @@
     <title>Convênio PDF</title>
     <style>
         body {
-            font-family: DejaVu Sans, sans-serif;
+            font-family: sans-serif;
             font-size: 12px;
+            padding: 20px;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
+
         th, td {
-            border: 1px solid #999;
-            padding: 6px;
+            border: 1px solid #444;
+            padding: 8px;
             vertical-align: top;
+            text-align: left;
         }
+
         th {
             background-color: #f0f0f0;
             font-weight: bold;
-            text-align: left;
         }
+
         .title {
             font-size: 18px;
-            margin-bottom: 10px;
             font-weight: bold;
             text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -38,70 +48,90 @@
     <table>
         <thead>
             <tr>
-                <th>Dados Gerais</th>
-                <th>Recursos / Concedentes / Parlamentar</th>
-                <th>Finalidade / Detalhamento</th>
-                <th>Valores / Datas</th>
-                <th>Status</th>
+                <th>N° Convênio</th>
+                <th>Parlamentar/Concedente</th>
+                <th>Objeto</th>
+                <th>Vigência</th>
+                <th>Progresso</th>
+                <th>Dados Bancários</th>
+                <th>Liberado</th>
+                <th>Repasse</th>
+                <th>Contrapartida</th>
+                <th>Total</th>
+                <th>Situação</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <!-- Dados Gerais -->
+                <!-- N° Convênio -->
                 <td>
-                    <strong>ID:</strong> {{ $convenio->id }}<br>
-                    <strong>Nº / Ano:</strong> {{ $convenio->numero_convenio }} / {{ $convenio->ano_convenio }}<br>
-                    <strong>Identificação:</strong> {{ $convenio->identificacao }}<br>
-                    <strong>C/C:</strong> {{ $convenio->conta_vinculada }}<br>
-                    <strong>Contratos:</strong> --<br>
-                    <strong>Objeto:</strong> {{ $convenio->objeto }}
+                    
+                    <div><strong>Nº do Convênio:</strong> {{ $convenio->numero_convenio }}</div>
+                    <div><strong>Identificação:</strong> {{ $convenio->identificacao }}</div>
+                    
                 </td>
 
-                <!-- Recursos / Concedentes / Parlamentar -->
+                <!-- Parlamentar/Concedente -->
                 <td>
-                    <strong>Fonte de recurso:</strong> {{ $convenio->fonte_recursos }}<br>
-                    <strong>Concedente:</strong> {{ $convenio->concedente }}<br>
-                    <strong>Parlamentar:</strong> {{ $convenio->parlamentar }}
+                    <div><strong>Parlamentar:</strong> {{ $convenio->parlamentar }}</div>
+                    <div><strong>Concedente:</strong> {{ $convenio->concedente }}</div>
                 </td>
 
-                <!-- Finalidade / Detalhamento -->
+                <!-- Objeto -->
                 <td>
-                    <strong>Finalidade:</strong> {{ $convenio->natureza_despesa }}<br>
-                    <strong>Detalhamento:</strong> --
+                    <div>{{ $convenio->objeto }}</div>
                 </td>
 
-                <!-- Valores / Datas -->
+                <!-- Vigência -->
                 <td>
-                    <strong>Repasse:</strong> R$ {{ number_format($convenio->valor_repasse, 2, ',', '.') }}<br>
-                    <strong>Valor Total:</strong> R$ {{ number_format($convenio->valor_total, 2, ',', '.') }}<br>
-                    <strong>Valor Liberado:</strong> R$ {{ number_format($convenio->valor_repasse, 2, ',', '.') }}<br>
-                    <strong>Assinatura:</strong> {{ \Carbon\Carbon::parse($convenio->data_assinatura)->format('d/m/Y') }}<br>
-                    <strong>Vigência:</strong> {{ \Carbon\Carbon::parse($convenio->data_vigencia)->format('d/m/Y') }}<br>
-                    <strong>Dias / Vencimento:</strong> 
-                    {{ $convenio->dias_restantes >= 0 ? $convenio->dias_restantes . ' dia(s) restantes' : 'Vencido há ' . abs($convenio->dias_restantes) . ' dias atrás' }}
+                    <div><strong>Repasse:</strong> R$ {{ number_format($convenio->valor_repasse, 2, ',', '.') }}</div>
+                    <div><strong>Valor Total:</strong> R$ {{ number_format($convenio->valor_total, 2, ',', '.') }}</div>
+                    <div><strong>Valor Liberado:</strong> R$ {{ number_format($convenio->valor_repasse, 2, ',', '.') }}</div>
+                    <div><strong>Assinatura:</strong> {{ \Carbon\Carbon::parse($convenio->data_assinatura)->format('d/m/Y') }}</div>
+                    <div><strong>Vigência:</strong> {{ \Carbon\Carbon::parse($convenio->data_vigencia)->format('d/m/Y') }}</div>
+                    <div><strong>Dias / Vencimento:</strong>
+                        {{ $convenio->dias_restantes >= 0 ? $convenio->dias_restantes . ' dia(s) restantes' : 'Vencido há ' . abs($convenio->dias_restantes) . ' dias atrás' }}
+                    </div>
                 </td>
 
-                <!-- Status -->
+                <!-- Progresso -->
                 <td>
-                    @php
-                        $acompanhamento = $convenio->acompanhamentos->first();
-                    @endphp
-
-                    @if($acompanhamento)
-                        <strong>Status:</strong> {{ ucfirst(str_replace('_', ' ', $acompanhamento->status)) }}<br>
-                        <strong>Monitoramento:</strong> 
-                        @if($acompanhamento->monitorado)
-                            Monitorado
-                        @else
-                            Não Monitorado
-                        @endif
-                    @else
-                        <strong>Status:</strong> Não informado<br>
-                        <strong>Monitoramento:</strong> Não informado
-                    @endif
+                    @php $acompanhamento = $convenio->acompanhamentos->first(); @endphp
+                    <div>{{ $acompanhamento->porcentagem_conclusao }}% concluído</div>
                 </td>
+
+                <!-- Dados Bancários -->
+                <td>
+                    <div>{{ $convenio->conta_vinculada }}</div>
+                </td>
+                
+                <!-- Liberado -->
+                <td>
+                    <div>R$ {{ number_format($acompanhamento->valor_liberado, 2, ',', '.') }}</div>
+                </td>
+                
+                <!-- Repasse -->
+                <td>
+                    <div>R$ {{ number_format($convenio->valor_repasse, 2, ',', '.') }}</div>
+                </td>
+                
+                <!-- Contrapartida -->
+                <td>
+                    <div>R$ {{ number_format($convenio->valor_contrapartida, 2, ',', '.') }}</div>
+                </td>
+                
+                <!-- Total -->
+                <td>
+                    <div>R$ {{ number_format($convenio->valor_total, 2, ',', '.') }}</div>
+                </td>
+                <!-- Situação -->
+                <td>
+                    <div>---</div>
+                </td>
+
             </tr>
         </tbody>
     </table>
+
 </body>
 </html>

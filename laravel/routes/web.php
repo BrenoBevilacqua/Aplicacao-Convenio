@@ -17,10 +17,10 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.su
 
 
 // Rotas protegidas por autenticação
-Route::middleware('auth', 'logged_out')->group (function () {
+Route::middleware('auth', 'logged_out')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/index', [ConvenioController::class, 'index'])->name('convenio.index');
-    Route::get('/convenios/info', [ConvenioController::class, 'historico']) ->name('convenios.info');
+    Route::get('/convenios/info', [ConvenioController::class, 'historico'])->name('convenios.info');
     Route::get('/convenios/{id}/exportar-pdf', [ConvenioController::class, 'exportarPdf'])->name('convenios.exportar.pdf');
 
     // Acesso somente para admin e admin master
@@ -49,6 +49,5 @@ Route::middleware('auth', 'logged_out')->group (function () {
     Route::middleware('admin_master')->group(function () {
         Route::get('/admin/requisicoes', [AuthController::class, 'requisicoesPendentes'])->name('admin.requisicoes');
         Route::post('/admin/aprovar/{id}', [AuthController::class, 'approveAdmin'])->name('admin.aprovar');
-        
     });
 });

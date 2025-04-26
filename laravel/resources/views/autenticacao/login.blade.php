@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <title>Login - Sistema de Convênios</title>
@@ -18,7 +19,7 @@
             background-color: white;
             padding: 30px 40px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
         }
@@ -96,26 +97,27 @@
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <h2>Entrar</h2>
 
         @if ($errors->any())
-            <div class="error-message">
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
-            </div>
+        <div class="error-message">
+            @foreach ($errors->all() as $error)
+            <p>{{ $error }}</p>
+            @endforeach
+        </div>
         @endif
 
         <form action="{{ route('convenio.authenticate') }}" method="POST">
             @csrf
 
             <div class="form-group">
-    <label for="username">Usuário/E-mail</label>
-    <input 
-    type="text" id="username" name="username" placeholder="Digite seu usuário/e-mail" required 
-    value="{{ old('username') }}" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+                <label for="username">Usuário/E-mail</label>
+                <input
+                    type="text" id="username" name="username" placeholder="Digite seu usuário/e-mail" required
+                    value="{{ old('username') }}" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
             </div>
 
             <div class="form-group">
@@ -131,11 +133,11 @@
 
             <!-- (mantém todo o conteúdo acima como está) -->
 
-    <button type="submit" class="btn-login">Entrar</button>
+            <button type="submit" class="btn-login">Entrar</button>
 
-<!-- Novo botão para criar conta -->
-    <div style="margin-top: 15px; text-align: center;">
-        <a href="{{ route('register') }}" style="
+            <!-- Novo botão para criar conta -->
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="{{ route('register') }}" style="
             display: inline-block;
             padding: 10px 20px;
             background-color: #2ecc71;
@@ -144,11 +146,12 @@
             text-decoration: none;
             font-weight: bold;
         ">Criar Conta</a>
-    </div>
+            </div>
 
 
-            
+
         </form>
     </div>
 </body>
+
 </html>

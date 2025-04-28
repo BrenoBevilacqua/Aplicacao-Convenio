@@ -43,10 +43,15 @@
                     value="{{ old('valor_liberado') }}">
             </div>
 
-            <div style="margin-bottom: 15px;">
-                <label for="situacao" style="display:block; margin-bottom: 5px;">Situação</label>
+            <!--<div style="margin-bottom: 15px;">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Situação</label>
                 <input type="text" name="situacao" id="situacao"
                     style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;">
+            </div>-->
+
+            <div>
+                <label for="situacao" class="block text-sm font-medium text-gray-700 mb-1">Situação</label>
+                <textarea name="situacao" id="situacao" rows="3" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required></textarea>
             </div>
 
 
@@ -59,3 +64,35 @@
         <button onclick="fecharModalAcompanhamento()" style="position:absolute; top:10px; right:10px; background-color:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:4px;">X</button>
     </div>
 </div>
+
+<script>
+    function carregarDadosAcompanhamento() {
+        const convenioId = document.querySelector('input[name="convenio_id"]').value;
+
+        fetch(`/convenios/${convenioId}/acompanhamento`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso && data.acompanhamento) {
+                    // Preencher os campos com os dados existentes
+                    document.querySelector('select[name="status"]').value = data.acompanhamento.status;
+                    document.querySelector('input[name="porcentagem_conclusao"]').value = data.acompanhamento.porcentagem_conclusao;
+                    document.getElementById('porcentagemValue').innerText = data.acompanhamento.porcentagem_conclusao + '%';
+                    document.querySelector('select[name="monitorado"]').value = data.acompanhamento.monitorado ? '1' : '0';
+                    document.querySelector('input[name="situacao"]').value = data.acompanhamento.situacao;
+
+                    // Formatação do valor liberado para exibição
+                    const valorLiberado = parseFloat(data.acompanhamento.valor_liberado);
+                    if (!isNaN(valorLiberado)) {
+                        const valorFormatado = valorLiberado.toLocaleString('pt-BR', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        });
+                        document.getElementById('valor_liberado').value = valorFormatado;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar dados do acompanhamento:', error);
+            });
+    }
+</script>

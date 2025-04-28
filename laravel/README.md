@@ -15,7 +15,6 @@ User::create([
     'username' => 'adminMaster',
     'password' => Hash::make('senha123'),
     'role' => User::ROLE_ADMIN_MASTER,
-<<<<<<< HEAD
 ]);
 
 # configuração do banco
@@ -33,6 +32,3 @@ DB_PASSWORD=
 # vite
 - rodar 'npm install'
 - rodar 'npm run build'
-=======
-]);
->>>>>>> 9c25aaf7692e993e2d2028e484de2b2b79ff3dd2

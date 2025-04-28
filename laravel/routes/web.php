@@ -38,6 +38,7 @@ Route::middleware('auth', 'logged_out')->group(function () {
 
         // rota de acompanhamentos
         Route::post('/convenios/{convenio}/acompanhamentos', [ConvenioController::class, 'storeAcompanhamento'])->name('convenios.acompanhamentos.store');
+        
 
         // rotas contratos
         Route::post('/convenios/{convenio}/contratos', [ConvenioController::class, 'storeContrato'])->name('convenios.contratos.store');

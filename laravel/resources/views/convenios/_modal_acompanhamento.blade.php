@@ -43,7 +43,13 @@
                     value="{{ old('valor_liberado') }}">
             </div>
 
-            
+            <div style="margin-bottom: 15px;">
+                <label for="situacao" style="display:block; margin-bottom: 5px;">Situação</label>
+                <input type="text" name="situacao" id="situacao"
+                    style="width:100%; padding:10px; border:1px solid #ccc; border-radius:4px;">
+            </div>
+
+
             <br>
             <div style="text-align:right;">
                 <button type="submit" style="padding: 10px 20px; background-color: #3498db; color:white; border:none; border-radius:6px;">Salvar</button>

@@ -366,11 +366,11 @@ class ConvenioController extends Controller
             'convenio_id' => $convenio->id,
             'dados' => $request->all(),
             'método' => $request->method()
-
         ]);
 
         $request->validate([
             'status' => 'required|in:em_execucao,finalizado,cancelado',
+            'situacao' => 'nullable|string|max:255',  // Adicionada validação para situação
             'monitorado' => 'required|boolean',
             'porcentagem_conclusao' => 'required|integer|min:0|max:100',
             'valor_liberado' => 'required|numeric',
@@ -383,6 +383,7 @@ class ConvenioController extends Controller
             // Se existe, atualizar em vez de criar um novo
             $acompanhamento->update([
                 'status' => $request->status,
+                'situacao' => $request->situacao,  // Adicionado o campo situação
                 'monitorado' => $request->monitorado == '1',
                 'porcentagem_conclusao' => $request->porcentagem_conclusao,
                 'valor_liberado' => str_replace(['.', ','], ['', '.'], $request->valor_liberado),
@@ -391,6 +392,7 @@ class ConvenioController extends Controller
             // Se não existe, criar um novo
             $acompanhamento = $convenio->acompanhamentos()->create([
                 'status' => $request->status,
+                'situacao' => $request->situacao,  // Adicionado o campo situação
                 'monitorado' => $request->monitorado == '1',
                 'porcentagem_conclusao' => $request->porcentagem_conclusao,
                 'valor_liberado' => str_replace(['.', ','], ['', '.'], $request->valor_liberado),
@@ -403,6 +405,7 @@ class ConvenioController extends Controller
             'sucesso' => true,
             'acompanhamento' => [
                 'status' => $acompanhamento->status,
+                'situacao' => $acompanhamento->situacao,  // Adicionado no retorno
                 'status_formatado' => ucfirst(str_replace('_', ' ', $acompanhamento->status)),
                 'monitorado' => $acompanhamento->monitorado,
                 'porcentagem_conclusao' => $acompanhamento->porcentagem_conclusao,
@@ -410,8 +413,26 @@ class ConvenioController extends Controller
                 'valor_liberado' => str_replace(['.', ','], ['', '.'], $request->valor_liberado),
             ]
         ]);
-        
     }
+    public function getAcompanhamento(Convenio $convenio)
+{
+    $acompanhamento = $convenio->acompanhamentos()->latest()->first();
+    
+    if (!$acompanhamento) {
+        return response()->json(['sucesso' => false]);
+    }
+    
+    return response()->json([
+        'sucesso' => true,
+        'acompanhamento' => [
+            'status' => $acompanhamento->status,
+            'situacao' => $acompanhamento->situacao ?? '',
+            'monitorado' => $acompanhamento->monitorado,
+            'porcentagem_conclusao' => $acompanhamento->porcentagem_conclusao ?? 0,
+            'valor_liberado' => $acompanhamento->valor_liberado,
+        ]
+    ]);
+}
 
     // guardar Contrato
     public function storeContrato(Request $request, $convenioId)

@@ -12,6 +12,7 @@ class Acompanhamento extends Model
         'convenio_id',
         'status',
         'monitorado',
+        'situacao', 
         'porcentagem_conclusao',
         'valor_liberado',
     ];

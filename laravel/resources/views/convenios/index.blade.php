@@ -4,7 +4,7 @@
 @vite('resources/js/app.js')
 <div class="container mx-auto px-4 py-8 max-w-7xl">
     <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Lista de Convênio</h1>
+        <h1 class="text-3xl font-bold text-gray-800">Lista de Convênios</h1>
         <a href="{{ route('convenio.create') }}"
             class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg shadow-md transition-all duration-200 flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

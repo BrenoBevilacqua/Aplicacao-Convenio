@@ -99,7 +99,10 @@ const ModalManager = {
                         <tr class="bg-white hover:bg-gray-50">
                             <td class="p-3 border text-xs">${c.numero_contrato || 'N/A'}</td>
                             <td class="p-3 border text-xs">${c.empresa_contratada || 'N/A'}</td>
+<<<<<<< HEAD
                             <td class="p-3 border text-xs break-words max-w-xs">${c.objeto || 'N/A'}</td>
+=======
+>>>>>>> 9c25aaf7692e993e2d2028e484de2b2b79ff3dd2
                             <td class="p-3 border text-xs font-medium">R$ ${parseFloat(c.valor || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                             <td class="p-3 border text-xs ${classeVencimento}">
                                 ${this.formatarData(c.validade_inicio)} a 

@@ -24,7 +24,10 @@
                         <tr>
                             <th class="px-4 py-2 border text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº Contrato</th>
                             <th class="px-4 py-2 border text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empresa</th>
+<<<<<<< HEAD
                             <th class="px-4 py-2 border text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Objeto</th>
+=======
+>>>>>>> 9c25aaf7692e993e2d2028e484de2b2b79ff3dd2
                             <th class="px-4 py-2 border text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
                             <th class="px-4 py-2 border text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Validade</th>
                             <th class="px-4 py-2 border text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>

@@ -27,7 +27,10 @@
         {{-- Sidebar fixa --}}
         <aside class="w-56 bg-gray-800 text-white flex flex-col justify-between fixed top-0 left-0 h-full p-6">
             <div>
-                <h2 class="text-lg font-semibold mb-8">Convênios</h2>
+
+                <div class="flex justify-center mb-4">
+                    <img src="{{ asset('img/Logo1000.png') }}" alt="CloudBox" class="mx-auto" style="height: 100px; width: auto !important; margin-bottom:10px;">
+                </div>
 
                 <a href="{{ route('convenio.index') }}"
                     class="mb-3 block px-4 py-2 rounded transition-all

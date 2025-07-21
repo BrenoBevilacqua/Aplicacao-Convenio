@@ -5,170 +5,93 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Convênio</title>
     <style>
-        @page {
-            margin: 1.5cm;
-        }
-        
-        body {
-            font-family: 'DejaVu Sans', Arial, sans-serif;
-            font-size: 10px;
-            line-height: 1.4;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-        }
-
-        .logo {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .title {
-            font-size: 16px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-
-        .subtitle {
-            font-size: 12px;
-            color: #555;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 9px;
-            margin-top: 10px;
-            table-layout: fixed;
-        }
-
-        th, td {
-            border: 1px solid #bdc3c7;
-            padding: 6px;
-            vertical-align: top;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            hyphens: auto;
-        }
-
-        th {
-            background-color: #888888;
-            color: white;
-            font-weight: bold;
-            text-align: center;
-            font-size: 9px;
-        }
-
-        .col-numero {
-            width: 8%;
-        }
-        
-        .col-parlamentar {
-            width: 12%;
-        }
-        
-        .col-objeto {
-            width: 16%;
-        }
-        
-        .col-vigencia {
-            width: 7%;
-        }
-        
-        .col-progresso {
-            width: 6%;
-        }
-        
-        .col-dados {
-            width: 8%;
-        }
-        
-        .col-liberado {
-            width: 7%;
-        }
-        
-        .col-repasse {
-            width: 7%;
-        }
-        
-        .col-contrapartida {
-            width: 9%;
-        }
-        
-        .col-total {
-            width: 7%;
-        }
-        
-        .col-situacao {
-            width: 11%;
-        }
-
-        .bold {
-            font-weight: bold;
-        }
-
-        .currency {
-            text-align: right;
-            font-weight: bold;
-        }
-
-        .text-break {
-            white-space: normal;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            hyphens: auto;
-        }
-        
-        .progress-bar {
-            background-color: #ecf0f1;
-            border-radius: 10px;
-            height: 10px;
-            width: 100%;
-            margin-top: 5px;
-        }
-        
-        .progress {
-            background-color: #3498db;
-            height: 10px;
-            border-radius: 10px;
-        }
-        
-        .label-info {
-            display: block;
-            margin-bottom: 3px;
-            font-weight: bold;
-        }
-        
-        .value-info {
-            display: block;
-            margin-bottom: 6px;
-        }
-        
-        .footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 8px;
-            color: #7f8c8d;
-            border-top: 1px solid #bdc3c7;
-            padding-top: 5px;
-        }
-        
-        .situacao-destaque {
-            font-weight: bold;
-        }
-    </style>
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 10px;
+        color: #333;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        table-layout: fixed;
+    }
+    th, td {
+        border: 1px solid #bdc3c7;
+        padding: 6px 4px;
+        vertical-align: top;
+        word-break: break-word;
+        hyphens: auto;
+    }
+    th {
+        background: #888;
+        color: #fff;
+        font-weight: bold;
+        text-align: center;
+        font-size: 10px;
+    }
+    .col-numero         { width: 8%;  }
+    .col-parlamentar    { width: 13%; }
+    .col-objeto         { width: 17%; }
+    .col-vigencia       { width: 8%;  text-align: center; }
+    .col-progresso      { width: 10%; text-align: center; }
+    .col-dados          { width: 10%; }
+    .col-liberado       { width: 8%;  text-align: center; }
+    .col-repasse        { width: 8%;  text-align: center; }
+    .col-contrapartida  { width: 8%;  text-align: center; }
+    .col-total          { width: 7%;  text-align: center; }
+    .col-situacao       { width: 7%;  text-align: center; }
+    .label-info {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 2px;
+    }
+    .value-info {
+        display: block;
+        margin-bottom: 4px;
+    }
+    .currency {
+        text-align: right;
+        font-weight: bold;
+    }
+    .text-break {
+        white-space: normal;
+        word-break: break-word;
+        hyphens: auto;
+        text-align: left;
+    }
+    .footer {
+        margin-top: 30px;
+        text-align: center;
+        font-size: 9px;
+        color: #888;
+        border-top: 1px solid #bdc3c7;
+        padding-top: 6px;
+    }
+    .situacao-destaque {
+        font-weight: bold;
+    }
+    .progress-bar {
+        background: #ecf0f1;
+        border-radius: 10px;
+        height: 10px;
+        width: 100%;
+        margin-top: 4px;
+    }
+    .progress {
+        background: #3498db;
+        height: 10px;
+        border-radius: 10px;
+    }
+</style>
 </head>
 <body>
+    <div style="text-align: center; margin-bottom: 10px;">
+        <img src="{{ public_path('img/Brasao_Jardim.png') }}" alt="Brasão Jardim" style="height: 90px;">
+        <h1>Estado de Mato Grosso do Sul</h1>
+        <h1>Município de Jardim</h1>
+    </div>
+    <h1></h1>
     <div class="header">
         <div class="title">INFORMAÇÕES DO CONVÊNIO</div>
         <div class="subtitle">Relatório gerado em {{ date('d/m/Y H:i:s') }}</div>
@@ -219,12 +142,18 @@
                 </td>
 
                 <!-- Progresso -->
-                <td>
+                <td class="text-break">
                     @php $acompanhamento = $convenio->acompanhamentos->first(); @endphp
-                    <span class="value-info bold">{{ $acompanhamento->porcentagem_conclusao }}%</span>
+                    <span class="value-info bold">
+                        {{ $acompanhamento->porcentagem_conclusao ?? 'Não específicado' }}
+                        @if(isset($acompanhamento->porcentagem_conclusao))%
+                        @endif
+                    </span>
+                    @if(isset($acompanhamento->porcentagem_conclusao))
                     <div class="progress-bar">
-                        <div class="progress" style="width: {{ $acompanhamento->porcentagem_conclusao }}%"></div>
+                    <div class="progress" style="width: {{ $acompanhamento->porcentagem_conclusao }}%"></div>
                     </div>
+                    @endif
                 </td>
 
                 <!-- Dados Bancários -->
@@ -232,11 +161,15 @@
                     <span class="value-info">{{ $convenio->conta_vinculada }}</span>
                 </td>
                 
+                
                 <!-- Liberado -->
                 <td class="currency">
-                    R$ {{ number_format($acompanhamento->valor_liberado, 2, ',', '.') }}
+                    @if(isset($acompanhamento) && isset($acompanhamento->valor_liberado))
+                        R$ {{ number_format($acompanhamento->valor_liberado, 2, ',', '.') }}
+                    @else
+                        Não específicado
+                    @endif
                 </td>
-                
                 <!-- Repasse -->
                 <td class="currency">
                     R$ {{ number_format($convenio->valor_repasse, 2, ',', '.') }}
@@ -254,7 +187,11 @@
                 
                 <!-- Situação -->
                 <td class="text-break">
-                    <span class="situacao-destaque">{{ $acompanhamento->situacao }}</span>
+                    @if(isset($acompanhamento) && isset($acompanhamento->situacao))
+                        <span class="situacao-destaque">{{ $acompanhamento->situacao }}</span>
+                    @else
+                        <span class="situacao-destaque">Não específicado</span>
+                    @endif
                 </td>
             </tr>
         </tbody>
